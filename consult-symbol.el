@@ -184,7 +184,7 @@ as fallback."
            (t 'symbol))
           cand)))
 
-(with-eval-after-load 'embark
+(when (featurep 'embark)
   (setf (alist-get 'consult-symbol embark-transformer-alist)
         #'consult-symbol--embark-transformer))
 
