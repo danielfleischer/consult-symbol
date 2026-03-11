@@ -3,6 +3,8 @@
 
 Search all Emacs symbols with [[https://github.com/minad/consult][consult]]-powered narrowing by category.
 
+[[file:assets/image_2.png]]
+
 * Overview
 
 =consult-symbol= provides a single interactive command that lets you search
@@ -10,13 +12,10 @@ across all Emacs symbols — commands, functions, macros, variables, faces,
 custom groups, and more — with category narrowing, rich annotations, and
 history-based sorting.
 
-* Screenshots
-
-[[file:assets/image_2.png]]
-
-[[file:assets/image_3.png]]
 
 [[file:assets/image_1.png]]
+
+
 
 * Features
 
