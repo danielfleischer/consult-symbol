@@ -173,6 +173,10 @@ as fallback."
   (when-let* ((sym (intern-soft cand)))
     (let* ((doc (consult-symbol--doc sym))
            (val (consult-symbol--value-string sym))
+           (location (when (fboundp sym)
+                       (string-truncate-left
+                        (abbreviate-file-name (cdr (find-function-library sym)))
+                        consult-symbol-value-width)))
            (cls (marginalia--symbol-class sym))
            (mid-fmt (format "%%-%ds" (+ consult-symbol-value-width 2))))
       (consult--annotate-align
@@ -180,7 +184,7 @@ as fallback."
        (concat cls
                (if (facep sym)
                    (propertize (format mid-fmt consult-symbol-face-sample) 'face sym)
-                 (propertize (format mid-fmt (or val "")) 'face 'font-lock-constant-face))
+                 (propertize (format mid-fmt (or val location "")) 'face 'font-lock-constant-face))
                (when doc
                  (propertize doc 'face 'shadow)))))))
 
