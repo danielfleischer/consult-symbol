@@ -169,9 +169,9 @@ as fallback."
                         (concat (substring val 0 (- consult-symbol-value-or-location-width 3)) "...")
                       val))))
            (location (when (fboundp sym)
-                       (string-truncate-left
-                        (abbreviate-file-name (cdr (find-function-library sym)))
-                        consult-symbol-value-or-location-width)))
+                       (when-let ((loc (ignore-errors (cdr (find-function-library sym)))))
+                         (string-truncate-left (abbreviate-file-name loc)
+                                               consult-symbol-value-or-location-width))))
            (cls (marginalia--symbol-class sym))
            (mid-fmt (format "%%-%ds" (+ consult-symbol-value-or-location-width 2))))
       (consult--annotate-align
