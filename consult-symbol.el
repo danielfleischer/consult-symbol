@@ -3,7 +3,7 @@
 ;; Copyright (C) 2026  Daniel Fleischer
 
 ;; Author: Daniel Fleischer <danflscr@gmail.com>
-;; Version: 0.1.0
+;; Version: 0.2.0
 ;; Package-Requires: ((emacs "27.1") (consult "2.0") (marginalia "1.0"))
 ;; Keywords: convenience, matching
 ;; URL: https://github.com/danielfleischer/consult-symbol
@@ -61,8 +61,8 @@ If a symbol, use that symbol as the history variable."
   "Maximum width for docstring truncation in annotations."
   :type 'integer)
 
-(defcustom consult-symbol-value-width 30
-  "Maximum width for variable value display in annotations."
+(defcustom consult-symbol-value-or-location-width 30
+  "Maximum width for variable value or function location display in annotations."
   :type 'integer)
 
 (defcustom consult-symbol-face-sample "AaBbCc"
@@ -159,26 +159,21 @@ as fallback."
           (concat (substring line 0 (- consult-symbol-doc-width 3)) "...")
         line))))
 
-(defun consult-symbol--value-string (sym)
-  "Return a truncated printed representation of SYM's value."
-  (when (boundp sym)
-    (let ((val (ignore-errors (prin1-to-string (symbol-value sym)))))
-      (when val
-        (if (> (length val) consult-symbol-value-width)
-            (concat (substring val 0 (- consult-symbol-value-width 3)) "...")
-          val)))))
-
 (defun consult-symbol--annotate (cand)
   "Annotate symbol candidate CAND with class, value, and docstring."
   (when-let* ((sym (intern-soft cand)))
     (let* ((doc (consult-symbol--doc sym))
-           (val (consult-symbol--value-string sym))
+           (val (when (boundp sym)
+                  (when-let ((val (ignore-errors (prin1-to-string (symbol-value sym)))))
+                    (if (> (length val) consult-symbol-value-or-location-width)
+                        (concat (substring val 0 (- consult-symbol-value-or-location-width 3)) "...")
+                      val))))
            (location (when (fboundp sym)
                        (string-truncate-left
                         (abbreviate-file-name (cdr (find-function-library sym)))
-                        consult-symbol-value-width)))
+                        consult-symbol-value-or-location-width)))
            (cls (marginalia--symbol-class sym))
-           (mid-fmt (format "%%-%ds" (+ consult-symbol-value-width 2))))
+           (mid-fmt (format "%%-%ds" (+ consult-symbol-value-or-location-width 2))))
       (consult--annotate-align
        cand
        (concat cls
