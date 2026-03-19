@@ -153,11 +153,10 @@ as fallback."
                     ((facep sym) (face-documentation sym))
                     ((boundp sym)
                      (documentation-property sym 'variable-documentation t))
-                    ((get sym 'group-documentation)))))
-    (let ((line (car (split-string doc "\n"))))
-      (if (> (length line) consult-symbol-doc-width)
-          (concat (substring line 0 (- consult-symbol-doc-width 3)) "...")
-        line))))
+                    ((get sym 'group-documentation))))
+              (line (car (split-string doc "\n"))))
+    (truncate-string-to-width
+     line consult-symbol-doc-width 0 nil t)))
 
 (defun consult-symbol--annotate (cand)
   "Annotate symbol candidate CAND with class, value, and docstring."
