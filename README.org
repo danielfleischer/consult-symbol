@@ -77,24 +77,8 @@ Clone this repository and add it to your =load-path=:
 
 * Embark Integration
 
-=consult-symbol= provides built-in support for [[https://github.com/oantolin/embark][embark]], enabling contextual actions on symbols based on their type.
-
-** Setup
-
-To enable embark integration, add this to your configuration:
-
-#+begin_src emacs-lisp
-(use-package consult-symbol
-  :config
-  (consult-symbol-setup-embark))
-#+end_src
-
-Or if you're not using =use-package=:
-
-#+begin_src emacs-lisp
-(require 'consult-symbol)
-(consult-symbol-setup-embark)
-#+end_src
+=consult-symbol= provides built-in support for [[https://github.com/oantolin/embark][embark]], enabling contextual actions on symbols based on their type. No need
+to set-up anything.
 
 * Customization
 

@@ -126,27 +126,6 @@ as fallback."
    ((fboundp 'helpful-symbol) (helpful-symbol sym))
    (t (describe-symbol sym))))
 
-;;;; Embark integration
-
-(defun consult-symbol--embark-transformer (_type cand)
-  "Transform `consult-symbol' candidate CAND to its specific embark type."
-  (when-let* ((mc (get-text-property 0 'multi-category target)))
-    (cons (cond
-           ((commandp (car sym)) 'command)
-           ((facep (car sym)) 'face)
-           ((and (boundp (car sym)) (not (fboundp (car sym)))) 'variable)
-           ((fboundp (car sym)) 'function)
-           (t 'symbol))
-          (cdr mc))))
-
-(defvar embark-transformer-alist)
-
-(defun consult-symbol-setup-embark ()
-  "Enable embark integration."
-  (interactive)
-  (setf (alist-get 'consult-symbol embark-transformer-alist)
-        #'consult-symbol--embark-transformer))
-
 ;;;; Entry point
 
 ;;;###autoload
