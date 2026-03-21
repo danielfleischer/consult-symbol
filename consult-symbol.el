@@ -3,7 +3,7 @@
 ;; Copyright (C) 2026  Daniel Fleischer
 
 ;; Author: Daniel Fleischer <danflscr@gmail.com>
-;; Version: 0.3.0
+;; Version: 0.4.1
 ;; Package-Requires: ((emacs "27.1") (consult "2.0"))
 ;; Keywords: convenience, matching
 ;; URL: https://github.com/danielfleischer/consult-symbol
@@ -29,8 +29,6 @@
 ;; Emacs symbols with narrowing by category (command, function,
 ;; variable, macro, face, etc.).  Built on top of the consult
 ;; completing-read framework.
-
-;; For embark integration, run `M-x consult-symbol-setup-embark'.
 
 ;;; Code:
 
@@ -130,7 +128,7 @@ as fallback."
 
 ;;;###autoload
 (defun consult-symbol (symbol)
-  "Search Emacs symbols with narrowing by category.
+  "Search Emacs SYMBOLs with narrowing by category.
 Symbols are grouped into commands, functions, macros, special forms,
 variables, custom variables, faces, custom groups, and CL types."
   (interactive
