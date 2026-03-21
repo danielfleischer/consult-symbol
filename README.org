@@ -35,13 +35,12 @@ history-based sorting.
   preview, and first-line docstring
 - *History sorting* — recently selected symbols appear first
 - *Embark integration* — automatic type detection for embark actions
-- *Customizable* — action function, annotation widths, narrowing categories
+- *Customizable* — action function, narrowing categories
 
 * Requirements
 
 - Emacs 27.1+
 - [[https://github.com/minad/consult][consult]]
-- [[https://github.com/minad/marginalia][marginalia]]
 
 Optional:
 - [[https://github.com/Wilfred/helpful][helpful]] — richer symbol descriptions
@@ -108,11 +107,6 @@ All options are under the =consult-symbol= customize group.
    + ='consult-symbol--history= — use dedicated history (default)
    + Any symbol — use custom history variable
 - =consult-symbol-types= — alist of narrowing keys and category labels
-- =consult-symbol-include-internal= — whether to include internal symbols
-  (those containing =--=)
-- =consult-symbol-doc-width= — max width for docstrings in annotations
-- =consult-symbol-value-width= — max width for variable values in annotations
-- =consult-symbol-face-sample= — sample text for face previews
 * License
 
 GPL-3.0-or-later

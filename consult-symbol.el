@@ -3,8 +3,8 @@
 ;; Copyright (C) 2026  Daniel Fleischer
 
 ;; Author: Daniel Fleischer <danflscr@gmail.com>
-;; Version: 0.2.0
-;; Package-Requires: ((emacs "27.1") (consult "2.0") (marginalia "1.0"))
+;; Version: 0.3.0
+;; Package-Requires: ((emacs "27.1") (consult "2.0"))
 ;; Keywords: convenience, matching
 ;; URL: https://github.com/danielfleischer/consult-symbol
 
@@ -35,7 +35,6 @@
 ;;; Code:
 
 (require 'consult)
-(require 'marginalia)
 
 ;;;; Customization
 
@@ -56,22 +55,6 @@ If a symbol, use that symbol as the history variable."
   :type '(choice (const :tag "Default minibuffer history" nil)
                  (const :tag "Dedicated consult-symbol history" consult-symbol--history)
                  (symbol :tag "Custom history variable")))
-
-(defcustom consult-symbol-doc-width 80
-  "Maximum width for docstring truncation in annotations."
-  :type 'integer)
-
-(defcustom consult-symbol-value-or-location-width 30
-  "Maximum width for variable value or function location display in annotations."
-  :type 'integer)
-
-(defcustom consult-symbol-face-sample "AaBbCc"
-  "Sample text used for face preview in annotations."
-  :type 'string)
-
-(defcustom consult-symbol-include-internal t
-  "Whether to include internal symbols (those containing \"--\")."
-  :type 'boolean)
 
 (defcustom consult-symbol-types
   '((?c . "Command")
@@ -104,15 +87,15 @@ narrowing key and the label is displayed in the group header."
   "Classify symbol SYM, returning a narrowing key character or nil.
 Maps the primary class to one of the narrowing categories."
   (cond
-   ((get sym 'cl--class) ?t)
-   ((facep sym) ?a)
-   ((get sym 'group-documentation) ?G)
-   ((commandp sym) ?c)
-   ((and (fboundp sym) (macrop (symbol-function sym))) ?m)
-   ((and (fboundp sym) (special-form-p (symbol-function sym))) ?F)
-   ((and (boundp sym) (get sym 'standard-value)) ?u)
-   ((fboundp sym) ?f)
-   ((boundp sym) ?v)))
+   ((get sym 'cl--class) (cons ?t 'symbol))
+   ((facep sym) (cons ?a 'face))
+   ((get sym 'group-documentation) (cons ?G 'customize-group))
+   ((commandp sym) (cons ?c 'command))
+   ((and (fboundp sym) (macrop (symbol-function sym))) (cons ?m 'function))
+   ((and (fboundp sym) (special-form-p (symbol-function sym))) (cons ?F 'function))
+   ((and (boundp sym) (get sym 'standard-value)) (cons ?u 'variable))
+   ((fboundp sym) (cons ?f 'function))
+   ((boundp sym) (cons ?v 'variable))))
 
 (defun consult-symbol--candidates ()
   "Collect all symbol candidates with type classification."
@@ -120,12 +103,12 @@ Maps the primary class to one of the narrowing categories."
     (mapatoms
      (lambda (sym)
        (let ((name (symbol-name sym)))
-         (unless (or (string-empty-p name)
-                     (string-prefix-p " " name)
-                     (and (not consult-symbol-include-internal)
-                          (string-match-p "--" name)))
+         (unless (or (string-empty-p name) (string-prefix-p " " name))
            (when-let* ((type (consult-symbol--classify sym)))
-             (push (propertize name 'consult--type type) cands))))))
+             (push (propertize name
+                               'consult--type (car type)
+                               'multi-category (cons (cdr type) name))
+                   cands))))))
     (nreverse cands)))
 
 ;;;; Default action
@@ -143,62 +126,18 @@ as fallback."
    ((fboundp 'helpful-symbol) (helpful-symbol sym))
    (t (describe-symbol sym))))
 
-;;;; Annotation
-
-(defun consult-symbol--doc (sym)
-  "Get the first line of documentation for symbol SYM."
-  (when-let* ((doc (cond
-                    ((fboundp sym)
-                     (ignore-errors (documentation sym t)))
-                    ((facep sym) (face-documentation sym))
-                    ((boundp sym)
-                     (documentation-property sym 'variable-documentation t))
-                    ((get sym 'group-documentation))))
-              (line (car (split-string doc "\n"))))
-    (truncate-string-to-width
-     line consult-symbol-doc-width 0 nil t)))
-
-(defun consult-symbol--annotate (cand)
-  "Annotate symbol candidate CAND with class, value, and docstring."
-  (when-let* ((sym (intern-soft cand)))
-    (let* ((doc (consult-symbol--doc sym))
-           (val (when (boundp sym)
-                  (when-let ((val (ignore-errors (prin1-to-string (symbol-value sym)))))
-                    (propertize
-                     (truncate-string-to-width
-                      val consult-symbol-value-or-location-width
-                      0 nil t)
-                     'face 'font-lock-constant-face))))
-           (location (when (fboundp sym)
-                       (when-let ((loc (ignore-errors (cdr (find-function-library sym)))))
-                         (propertize
-                          (string-truncate-left
-                           (abbreviate-file-name loc)
-                           consult-symbol-value-or-location-width)
-                          'face 'success))))
-           (cls (marginalia--symbol-class sym))
-           (mid-fmt (format "%%-%ds" (+ consult-symbol-value-or-location-width 2))))
-      (consult--annotate-align
-       cand
-       (concat cls
-               (if (facep sym)
-                   (propertize (format mid-fmt consult-symbol-face-sample) 'face sym)
-                 (format mid-fmt (or val location "")))
-               (when doc
-                 (propertize doc 'face 'shadow)))))))
-
 ;;;; Embark integration
 
 (defun consult-symbol--embark-transformer (_type cand)
   "Transform `consult-symbol' candidate CAND to its specific embark type."
-  (when-let* ((sym (intern-soft cand)))
+  (when-let* ((mc (get-text-property 0 'multi-category target)))
     (cons (cond
-           ((commandp sym) 'command)
-           ((facep sym) 'face)
-           ((and (boundp sym) (not (fboundp sym))) 'variable)
-           ((fboundp sym) 'function)
+           ((commandp (car sym)) 'command)
+           ((facep (car sym)) 'face)
+           ((and (boundp (car sym)) (not (fboundp (car sym)))) 'variable)
+           ((fboundp (car sym)) 'function)
            (t 'symbol))
-          cand)))
+          (cdr mc))))
 
 (defvar embark-transformer-alist)
 
@@ -227,13 +166,12 @@ variables, custom variables, faces, custom groups, and CL types."
                     :prompt prompt
                     :narrow (consult--type-narrow consult-symbol-types)
                     :group (consult--type-group consult-symbol-types)
-                    :annotate #'consult-symbol--annotate
-                    :category 'consult-symbol
+                    :category 'multi-category
                     :require-match t
                     :sort t
                     :default default
                     :history consult-symbol-history
-                    :lookup (lambda (sel _ &rest _) (intern-soft sel)))))
+                    :lookup (lambda (sel &rest _) (intern-soft sel)))))
     (when selected
       (funcall consult-symbol-action selected))))
 
