@@ -1,5 +1,10 @@
+#+html: <a href="https://www.gnu.org/software/emacs/"><img alt="GNU Emacs" src="https://github.com/minad/corfu/blob/screenshots/emacs.svg?raw=true"/></a>
+#+html: <a href="https://melpa.org/#/consult-symbol"><img alt="MELPA" src="https://melpa.org/packages/consult-symbol-badge.svg"/></a>
+#+html: <a href="https://stable.melpa.org/#/consult-symbol"><img src="https://stable.melpa.org/packages/consult-symbol-badge.svg"></a>
+
 #+title: consult-symbol
 #+author: Daniel Fleischer
+
 
 Search all Emacs symbols with [[https://github.com/minad/consult][consult]]-powered narrowing by category.
 
@@ -48,20 +53,20 @@ Optional:
 
 * Installation
 
+** From MELPA
+
+#+begin_src emacs-lisp
+(use-package consult-symbol
+  :ensure t
+  :bind ("C-h o" . consult-symbol))
+#+end_src
+
 ** With use-package and package-vc (Emacs 29+)
 
 #+begin_src emacs-lisp
 (use-package consult-symbol
   :vc (:url "https://github.com/danielfleischer/consult-symbol"
        :rev :newest)
-  :bind ("C-h o" . consult-symbol))
-#+end_src
-
-** With elpaca/straight
-
-#+begin_src emacs-lisp
-(use-package consult-symbol
-  :elpaca (:host github :repo "danielfleischer/consult-symbol")
   :bind ("C-h o" . consult-symbol))
 #+end_src
 
